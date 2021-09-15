@@ -1,7 +1,7 @@
-package com.dtalonso.data.di
+package com.dtalonso.di
 
-import com.dtalonso.controller.user.UserController
-import com.dtalonso.controller.user.UserControllerImpl
+import com.dtalonso.data.repository.user.UserRepository
+import com.dtalonso.data.repository.user.UserRepositoryImpl
 import com.dtalonso.util.Constants
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -14,7 +14,7 @@ val mainModule = module {
         client.getDatabase(Constants.DATABASE_NAME)
     }
 
-    single <UserController> {
-        UserControllerImpl(get())
+    single <UserRepository> {
+        UserRepositoryImpl(get())
     }
 }
