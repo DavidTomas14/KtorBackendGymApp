@@ -26,4 +26,9 @@ class UserRepositoryImpl(
         val user = getUserByUsername(username)
         return user?.password == enteredPassword
     }
+
+    override suspend fun doesUserNameBelongToUserId(username: String, userId: String): Boolean {
+        return users.findOneById(userId)?.username == username
+    }
+
 }

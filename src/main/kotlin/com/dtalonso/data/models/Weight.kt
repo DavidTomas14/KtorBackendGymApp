@@ -5,11 +5,11 @@ import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId
 
 data class Weight(
-    @BsonId
-    val id: String = ObjectId().toString(),
     val exerciseId: String,
     val userId: String,
-    val muscularGroup: MuscularGroup,
+    val weight: Float,
     val comment: String,
-    val date: Long
+    val date: Long,
+    @BsonId
+    val id: String = ObjectId().toString(),
 )

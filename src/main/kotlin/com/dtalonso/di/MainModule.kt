@@ -1,7 +1,9 @@
 package com.dtalonso.di
 
-import com.dtalonso.data.repository.user.UserRepository
-import com.dtalonso.data.repository.user.UserRepositoryImpl
+import com.dtalonso.data.repository.user.*
+import com.dtalonso.data.service.ExerciseService
+import com.dtalonso.data.service.UserService
+import com.dtalonso.data.service.WeightsService
 import com.dtalonso.util.Constants
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -17,4 +19,13 @@ val mainModule = module {
     single <UserRepository> {
         UserRepositoryImpl(get())
     }
+    single <ExerciseRepository> {
+        ExerciseRepositoryImpl(get())
+    }
+    single <WeightsRepository> {
+        WeightsRepositoryImpl(get())
+    }
+    single {UserService(get())}
+    single {ExerciseService(get())}
+    single {WeightsService(get())}
 }

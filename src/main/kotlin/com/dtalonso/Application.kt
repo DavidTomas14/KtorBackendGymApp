@@ -13,9 +13,9 @@ fun Application.module() {
     install(Koin) {
         modules(mainModule)
     }
+    configureSecurity()
     configureRouting()
-    configureSockets()
-    configureSerialization()
     configureHTTP()
+    configureSerialization()
     configureMonitoring()
 }

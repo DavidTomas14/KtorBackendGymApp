@@ -1,9 +1,14 @@
 package com.dtalonso.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.dtalonso.data.repository.user.UserRepository
 import com.dtalonso.data.models.User
 import com.dtalonso.data.requests.AccountAuthRequest
+import com.dtalonso.data.responses.AuthResponse
 import com.dtalonso.data.responses.BasicApiResponse
+import com.dtalonso.data.service.UserService
+import com.dtalonso.data.service.UserService.*
 import com.dtalonso.util.ApiResponseMessages.FIELDS_BLANK
 import com.dtalonso.util.ApiResponseMessages.PASSWORD_DOESNT_MATCH
 import com.dtalonso.util.ApiResponseMessages.SUCCESSFULLY_LOGGED_IN
@@ -14,15 +19,15 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import java.util.*
 
-fun Route.createUserRoute(userRepository: UserRepository) {
+fun Route.createUser(userService: UserService) {
     post("/api/user/create") {
         val request = call.receiveOrNull<AccountAuthRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val userExist = userRepository.getUserByUsername(request.username) != null
-        if (userExist) {
+        if (userService.doesUserExist(request.username)) {
             call.respond(
                 BasicApiResponse(
                     successful = false,
@@ -31,48 +36,52 @@ fun Route.createUserRoute(userRepository: UserRepository) {
             )
             return@post
         }
-        if (request.username.isBlank() || request.password.isBlank()) {
-            call.respond(
-                BasicApiResponse(
-                    successful = false,
-                    message = FIELDS_BLANK
+        when(userService.validateAccountRequest(request)) {
+            is ValidationEvent.ErrorFieldEmpty-> {
+                call.respond(
+                    BasicApiResponse(
+                        successful = false,
+                        message = FIELDS_BLANK
+                    )
                 )
-            )
-            return@post
+                return@post
         }
-        userRepository.createUser(
-            User(
-                username = request.username,
-                password = request.password
-            )
-        )
-        call.respond(
-            BasicApiResponse(
-                successful = true,
-                message = null
-            )
-        )
+            is ValidationEvent.Success -> {
+                userService.createUser(request)
+                call.respond(
+                    BasicApiResponse(
+                        successful = true,
+                        message = null
+                    )
+                )
+            }
+        }
     }
 }
 
 
-fun Route.loginUser(userRepository: UserRepository) {
+fun Route.loginUser(
+    userService: UserService,
+    jwtIssuer: String,
+    jwtAudience: String,
+    jwtSecret: String
+) {
     post("/api/user/login") {
         val request = call.receiveOrNull<AccountAuthRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
         if (request.username.isBlank() || request.password.isBlank()) {
-            call.respond(
-                BasicApiResponse(
-                    successful = false,
-                    message = FIELDS_BLANK
+                call.respond(
+                    BasicApiResponse(
+                        successful = false,
+                        message = FIELDS_BLANK
+                    )
                 )
-            )
-            return@post
+                return@post
         }
-        val userDoesntExists = userRepository.getUserByUsername(request.username) == null
-        if (userDoesntExists) {
+        val user = userService.getUserByUsername(request.username)
+        if (user == null) {
             call.respond(
                 BasicApiResponse(
                     successful = false,
@@ -81,13 +90,19 @@ fun Route.loginUser(userRepository: UserRepository) {
             )
             return@post
         }
-        val passwordMatches = userRepository.doesPasswordForUserMatch(request.username, request.password)
-        if (!passwordMatches) {
+
+        val isCorrectPassword = userService.doesPasswordMatchForUser(request)
+        if (isCorrectPassword) {
+            val expiresIn = 1000L * 60L* 60L * 365L
+            val token = JWT.create()
+                .withClaim("userId", user.id)
+                .withIssuer(jwtIssuer)
+                .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                .withAudience(jwtAudience)
+                .sign(Algorithm.HMAC256(jwtSecret))
             call.respond(
-                BasicApiResponse(
-                    successful = false,
-                    message = PASSWORD_DOESNT_MATCH
-                )
+                HttpStatusCode.OK,
+                AuthResponse(token = token)
             )
         } else {
             call.respond(
