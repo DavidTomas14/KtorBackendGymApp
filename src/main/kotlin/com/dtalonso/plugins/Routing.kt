@@ -1,7 +1,6 @@
 package com.dtalonso.plugins
 
-import com.dtalonso.data.repository.user.ExerciseRepository
-import com.dtalonso.data.repository.user.UserRepository
+
 import com.dtalonso.data.service.ExerciseService
 import com.dtalonso.data.service.UserService
 import com.dtalonso.data.service.WeightsService
@@ -24,6 +23,7 @@ fun Application.configureRouting() {
     routing {
 
         //User Routes
+        authenticate()
         createUser(userService)
         loginUser(
             userService = userService,

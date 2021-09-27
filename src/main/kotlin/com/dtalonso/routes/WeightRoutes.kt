@@ -37,7 +37,7 @@ fun Route.createWeight(weightsService: WeightsService) {
                 }
                 is ErrorWeightIsNaN -> {
                     call.respond(
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                             successful = false,
                             message = WEIGHT_IS_NAN
                         )
@@ -45,7 +45,7 @@ fun Route.createWeight(weightsService: WeightsService) {
                 }
                 is Success -> {
                     call.respond(
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                             successful = true
                         )
                     )
@@ -68,7 +68,10 @@ fun Route.getWeightsByExercise(weightsService: WeightsService) {
             )
             call.respond(
                 status = HttpStatusCode.OK,
-                message = weights
+                BasicApiResponse(
+                    successful = true,
+                    data = weights
+                )
             )
         }
     }
@@ -91,7 +94,7 @@ fun Route.updateWeight(weightsService: WeightsService) {
                 when(weightsService.updateWeight(request)){
                     is ErrorFieldEmpty -> {
                         call.respond(
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = false,
                                 message = ApiResponseMessages.FIELDS_BLANK
                             )
@@ -99,7 +102,7 @@ fun Route.updateWeight(weightsService: WeightsService) {
                     }
                     is ErrorWeightIsNaN -> {
                         call.respond(
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = false,
                                 message = WEIGHT_IS_NAN
                             )
@@ -107,7 +110,7 @@ fun Route.updateWeight(weightsService: WeightsService) {
                     }
                     is ErrorNullWeight -> {
                         call.respond(
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = false,
                                 message = WEIGHT_IS_NULL
                             )
@@ -115,7 +118,7 @@ fun Route.updateWeight(weightsService: WeightsService) {
                     }
                     is Success -> {
                         call.respond(
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = true
                             )
                         )
@@ -137,7 +140,7 @@ fun Route.deleteWeight(weightsService: WeightsService){
             val user = call.userId
             val weight = weightsService.getWeightById(request.parentId) ?: kotlin.run {
                 call.respond(
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                         successful = false,
                         message = EXERCISE_DOENT_EXIST
                     )
@@ -150,7 +153,7 @@ fun Route.deleteWeight(weightsService: WeightsService){
             }else{
                 weightsService.deleteWeight(request.parentId)
                 call.respond(
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                         successful = true
                     )
                 )

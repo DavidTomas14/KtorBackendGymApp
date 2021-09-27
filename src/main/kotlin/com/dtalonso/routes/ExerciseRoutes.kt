@@ -36,7 +36,7 @@ fun Route.createExercise(exerciseService: ExerciseService) {
             when (exerciseService.addExerciseInMuscularGroup(request, user)) {
                 is ErrorFieldEmpty -> {
                     call.respond(
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                             successful = false,
                             message = FIELDS_BLANK
                         )
@@ -44,7 +44,7 @@ fun Route.createExercise(exerciseService: ExerciseService) {
                 }
                 is ErrorMuscularGroup -> {
                     call.respond(
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                             successful = false,
                             message = MUSCULAR_ERROR_DOESNT_EXIST
                         )
@@ -53,7 +53,7 @@ fun Route.createExercise(exerciseService: ExerciseService) {
                 is Success -> {
                     call.respond(
                         HttpStatusCode.OK,
-                        BasicApiResponse(
+                        BasicApiResponse<Unit>(
                             successful = true
                         )
 
@@ -81,7 +81,10 @@ fun Route.getExercises(exerciseService: ExerciseService) {
             )
             call.respond(
                 status = HttpStatusCode.OK,
-                message = exercises
+                BasicApiResponse(
+                    successful = true,
+                    data = exercises
+                )
             )
         }
     }
@@ -97,7 +100,11 @@ fun Route.getExerciseById(exerciseService: ExerciseService) {
             val exercise = exerciseService.getExerciseById(exerciseId) ?: ""
             call.respond(
                 status = HttpStatusCode.OK,
-                message = exercise)
+                BasicApiResponse(
+                    successful = true,
+                    data = exercise
+                )
+            )
         }
     }
 }
@@ -122,7 +129,7 @@ fun Route.updateExercise(exerciseService: ExerciseService) {
                when(exerciseService.updateExercise(request)){
                    is ErrorFieldEmpty -> {
                        call.respond(
-                           BasicApiResponse(
+                           BasicApiResponse<Unit>(
                                successful = false,
                                message = FIELDS_BLANK
                            )
@@ -130,7 +137,7 @@ fun Route.updateExercise(exerciseService: ExerciseService) {
                    }
                    is ErrorMuscularGroup -> {
                        call.respond(
-                           BasicApiResponse(
+                           BasicApiResponse<Unit>(
                                successful = false,
                                message = MUSCULAR_ERROR_DOESNT_EXIST
                            )
@@ -138,7 +145,7 @@ fun Route.updateExercise(exerciseService: ExerciseService) {
                    }
                    is ErrorNullExercise->{
                        call.respond(
-                           BasicApiResponse(
+                           BasicApiResponse<Unit>(
                                successful = false,
                                message = EXERCISE_IS_NULL
                            )
@@ -146,7 +153,7 @@ fun Route.updateExercise(exerciseService: ExerciseService) {
                    }
                    is Success -> {
                        call.respond(
-                           BasicApiResponse(
+                           BasicApiResponse<Unit>(
                                successful = true
                            )
                        )
@@ -167,7 +174,7 @@ fun Route.deleteExercise(exerciseService: ExerciseService){
             val user = call.userId
             val weight = exerciseService.getExerciseById(request.parentId) ?: kotlin.run {
                 call.respond(
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                         successful = false,
                         message = EXERCISE_DOENT_EXIST
                     )
@@ -180,7 +187,7 @@ fun Route.deleteExercise(exerciseService: ExerciseService){
             }else{
                 exerciseService.deleteExercise(request.parentId)
                 call.respond(
-                    BasicApiResponse(
+                    BasicApiResponse<Unit>(
                         successful = true
                     )
                 )
